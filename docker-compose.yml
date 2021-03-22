@@ -32,19 +32,19 @@ services:
       - "${MONGO_PORT}:27017"
     volumes: 
       - mongo:/data/mongodb
-      - ./db/init.js:/docker-entrypoint-initdb.d/init.js
+      - ./init.js:/docker-entrypoint-initdb.d/init.js
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_INIT_DATABASE}
     networks:
-      development:
+      bigdatanet:
 
   mongo-express:
     image: mongo-express
     container_name: mongo-express
     environment:
-      ME_CONFIG_MONGODB_SERVER: dhbw-t3100-mongo
+      ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_PORT: 27017
       ME_CONFIG_MONGODB_ENABLE_ADMIN: ${MONGO_EXPRESS_ENABLE_ADMIN}
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_EXPRESS_ADMIN_USER}
@@ -57,7 +57,7 @@ services:
     ports:
       - "${MONGO_EXPRESS_PORT}:8081"
     networks:
-      development:
+      bigdatanet:
 
 networks:
   bigdatanet:
