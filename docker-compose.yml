@@ -1,6 +1,20 @@
 version: "3.3"
 
 services:
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    image: timostroehlein/dhbw-bigdata-mtg-frontend
+    command: npm run start
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /usr/src/app/
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    networks:
+      bigdatanet:
+
   hadoop:
     container_name: hadoop
     image: marcelmittelstaedt/spark_base:latest
