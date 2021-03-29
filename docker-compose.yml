@@ -36,6 +36,10 @@ services:
     image: marcelmittelstaedt/airflow:latest
     ports:
      - "8080:8080"
+    volumes:
+     - type: bind
+       source: ./airflow/dags
+       target: /home/airflow/airflow/dags/
     networks:
       bigdatanet:
 
