@@ -13,6 +13,7 @@ from airflow.operators.hive_operator import HiveOperator
 # https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-get_json_object
 # https://github.com/rcongiu/Hive-JSON-Serde
 # http://thornydev.blogspot.com/2013/07/querying-json-records-via-hive.html
+# https://community.cloudera.com/t5/Support-Questions/org-apache-hive-hcatalog-data-JsonSerDe-not-found/td-p/191730
 
 # Setup DAG
 
