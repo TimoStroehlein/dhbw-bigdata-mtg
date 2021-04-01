@@ -9,6 +9,11 @@ from airflow.operators.filesystem_operations import CreateDirectoryOperator
 from airflow.operators.filesystem_operations import ClearDirectoryOperator
 from airflow.operators.hive_operator import HiveOperator
 
+# https://community.cloudera.com/t5/Support-Questions/create-hive-table-with-this-json-format/td-p/162384
+# https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-get_json_object
+# https://github.com/rcongiu/Hive-JSON-Serde
+# http://thornydev.blogspot.com/2013/07/querying-json-records-via-hive.html
+
 # Setup DAG
 
 args = {
@@ -21,23 +26,45 @@ dag = DAG('MTG', default_args=args, description='Magic: The Gathering - Import C
 
 # SQL Setup
 
+hiveSQL_add_json_serde='''
+ADD JAR /home/hadoop/hive/lib/hive-hcatalog-core-3.1.2.jar;
+'''
+
 hiveSQL_create_table_cards='''
+DROP TABLE IF EXISTS cards;
 CREATE EXTERNAL TABLE IF NOT EXISTS cards(
-	card_id BIGINT DEFAULT SURROGATE_KEY(),
-    name STRING,
+	name STRING,
     subtype BIGINT,
     text STRING,
     flavor STRING,
     artist STRING
-) COMMENT 'MTG Cards' PARTITIONED BY (partition_year int, partition_month int, partition_day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' STORED AS TEXTFILE LOCATION '/user/hadoop/imdb/title_ratings'
-TBLPROPERTIES ('skip.header.line.count'='1');
+) COMMENT 'MTG Cards' PARTITIONED BY (
+    partition_year int, partition_month int, partition_day int
+) ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS TEXTFILE LOCATION '/user/hadoop/mtg/final';
 '''
 
 hiveSQL_add_partition_cards='''
 ALTER TABLE cards
-ADD IF NOT EXISTS partition(partition_year={{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}, partition_month={{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}, partition_day={{ macros.ds_format(ds, "%Y-%m-%d", "%d")}})
-LOCATION '/user/hadoop/imdb/title_ratings/{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}/';
+ADD IF NOT EXISTS partition(
+    partition_year={{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}},
+    partition_month={{ macros.ds_format(ds, "%Y-%m-%d", "%m")}},
+    partition_day={{ macros.ds_format(ds, "%Y-%m-%d", "%d")}})
+LOCATION '/user/hadoop/mtg/final/partitioned';
 '''
+
+hiveSQL_load_data_into_cards='''
+LOAD DATA INPATH '/user/hadoop/mtg/raw/cards_{{ ds }}.json' INTO TABLE cards;
+SELECT * FROM cards;
+'''
+
+# Add json serde
+
+HiveTable_add_json_serde=HiveOperator(
+    task_id='add_json_serde',
+    hql=hiveSQL_add_json_serde,
+    hive_cli_conn_id='beeline',
+    dag=dag)
 
 # Create direcctories and download data
 
@@ -65,18 +92,40 @@ download_cards = HttpDownloadOperator(
 # Put data to HDFS
 
 hdfs_create_cards_partition_dir = HdfsMkdirFileOperator(
-    task_id='mkdir_hdfs_cards_dir',
-    directory='/user/hadoop/mtg/cards/{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}',
+    task_id='hdfs_mkdir_raw_cards',
+    directory='/user/hadoop/mtg/raw',
     hdfs_conn_id='hdfs',
     dag=dag,
 )
 
 hdfs_put_cards = HdfsPutFileOperator(
-    task_id='upload_cards_to_hdfs',
-    local_file='/home/airflow/mtg/cards_{{ ds }}.tsv',
-    remote_file='/user/hadoop/mtg/cards/{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}/{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}/title.ratings_{{ ds }}.tsv',
+    task_id='hdfs_upload_raw_cards_to_hdfs',
+    local_file='/home/airflow/mtg/cards_{{ ds }}.json',
+    remote_file='/user/hadoop/mtg/raw/cards_{{ ds }}.json',
     hdfs_conn_id='hdfs',
     dag=dag,
+)
+
+# Dummy
+
+dummy_op = DummyOperator(
+    task_id='dummy', 
+    dag=dag)
+
+# PySpark
+
+pyspark_format_json = SparkSubmitOperator(
+    task_id='pyspark_format_json',
+    conn_id='spark',
+    application='/home/airflow/airflow/python/pyspark_top_tvseries.py',
+    total_executor_cores='2',
+    executor_cores='2',
+    executor_memory='2g',
+    num_executors='2',
+    name='spark_format_json',
+    verbose=True,
+    application_args=['--year', '{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}', '--month', '{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}', '--day',  '{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}', '--hdfs_source_dir', '/user/hadoop/imdb', '--hdfs_target_dir', '/user/hadoop/imdb_final/top_tvseries', '--hdfs_target_format', 'csv'],
+    dag = dag
 )
 
 # Create Hive table
@@ -93,11 +142,18 @@ HiveTable_addPartition_cards = HiveOperator(
     hive_cli_conn_id='beeline',
     dag=dag)
 
-dummy_op = DummyOperator(
-    task_id='dummy', 
+HiveTable_load_data_into_cards = HiveOperator(
+    task_id='load_data_into_cards_table',
+    hql=hiveSQL_load_data_into_cards,
+    hive_cli_conn_id='beeline',
     dag=dag)
 
-create_local_import_dir >> clear_local_import_dir >> download_cards >> \
+
+HiveTable_add_json_serde >> \
+        create_local_import_dir >> clear_local_import_dir >> download_cards >> \
         hdfs_create_cards_partition_dir >> hdfs_put_cards >> \
-        HiveTable_create_cards >> HiveTable_addPartition_cards >> \
         dummy_op
+dummy_op >> \
+        HiveTable_create_cards >> HiveTable_addPartition_cards >> \
+        HiveTable_load_data_into_cards >> \
+dummy_op >> \
