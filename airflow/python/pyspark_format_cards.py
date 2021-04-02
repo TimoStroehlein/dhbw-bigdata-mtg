@@ -21,8 +21,10 @@ def get_args():
     
     return parser.parse_args()
 
-if __name__ == '__main__':
-
+def format_cards():
+    """
+    Format MTG Cards
+    """
     # Parse Command Line Args
     args = get_args()
 
@@ -32,7 +34,6 @@ if __name__ == '__main__':
 
     # Read raw cards from HDFS
     mtg_cards_df = spark.read.format('json')\
-        .options(nullValue='')\
         .load(f'/user/hadoop/mtg/raw/cards_{args.year}-{args.month}-{args.day}.json')
 
     # Explode the array into single elements
@@ -51,4 +52,7 @@ if __name__ == '__main__':
     # Write data to HDFS
     flattened_subtypes.write.format('json')\
         .mode('overwrite')\
-        .save('/user/hadoop/mtg/final')
+        .save(f'/user/hadoop/mtg/final/cards_{args.year}-{args.month}-{args.day}.json')
+
+if __name__ == '__main__':
+    format_cards()
