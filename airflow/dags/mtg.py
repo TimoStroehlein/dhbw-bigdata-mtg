@@ -149,6 +149,7 @@ HiveTable_load_data_into_cards = HiveOperator(
     hive_cli_conn_id='beeline',
     dag=dag)
 
+# Airflow
 
 HiveTable_add_json_serde >> \
         create_local_import_dir >> clear_local_import_dir >> download_cards >> \
@@ -156,5 +157,6 @@ HiveTable_add_json_serde >> \
         dummy_op
 dummy_op >> \
         HiveTable_create_cards >> HiveTable_addPartition_cards >> \
-        HiveTable_load_data_into_cards >> \
+        HiveTable_load_data_into_cards
 dummy_op >> \
+        pyspark_format_json
