@@ -17,8 +17,7 @@ services:
 
   hadoop:
     container_name: hadoop
-    build: ./hadoop
-    image: timostroehlein/spark_base:latest
+    image: marcelmittelstaedt/spark_base:latest
     ports:
      - "8088:8088"
      - "9870:9870"
@@ -29,6 +28,10 @@ services:
      - "8031:8031"
      - "9000:9000"
      - "8888:8888"
+    volumes:
+    - type: bind
+      source: ./airflow/python
+      target: /home/hadoop/airflow/python/
     networks:
       bigdatanet:
 
