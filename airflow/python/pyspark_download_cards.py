@@ -43,7 +43,9 @@ def download_cards():
     mtg_cards = {'cards': []}
 
     response = requests.get('https://api.magicthegathering.io/v1/cards')
-    json_raw = response.json()  
+    #response = urlopen('https://api.magicthegathering.io/v1/cards').read().decode('utf-8')
+
+    json_raw = response.json()
 
     for card in json_raw['cards']:
         mtg_cards['cards'].append(card) 
@@ -53,6 +55,7 @@ def download_cards():
     while True:
         print(next)
         next_response = requests.get(next)
+        #next_response = urlopen(next).read().decode('utf-8')
         next_json_raw = next_response.json()
 
         for next_card in next_json_raw['cards']:
@@ -72,7 +75,8 @@ def download_cards():
     #    json.dump(mtg_cards, file)
 
     # Write cards from HDFS
-    mtg_cards_rdd = sc.parallelize(json.dumps(mtg_cards))
+    print(json.dumps(mtg_cards))
+    mtg_cards_rdd = sc.parallelize([json.dumps(mtg_cards)])
     mtg_cards_df = spark.read\
         .option('multiLine', True)\
         .json(mtg_cards_rdd)
