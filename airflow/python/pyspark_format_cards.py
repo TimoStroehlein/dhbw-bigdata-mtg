@@ -47,7 +47,7 @@ def format_cards():
         .na.fill('')
 
     # Remove all unnecessary columns
-    columns = ['name', 'subtypes', 'text', 'flavor', 'artist']
+    columns = ['name', 'subtypes', 'text', 'flavor', 'artist', 'multiverseid', 'imageUrl']
     reduced_cards_df = mtg_cards_renamed_null_df.select(*columns)
 
     # Flatten the subtypes from an array to a comma seperated string
