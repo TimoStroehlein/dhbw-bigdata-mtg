@@ -76,8 +76,17 @@ def download_cards():
         next_count += int(next_response.headers.get('count'))
         next_total_count = int(next_response.headers.get('total-count'))
 
+    # Split raw cards
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+    splitted = list(chunks(mtg_cards['cards'], 10))
+    mtg_cards_splitted = []
+    for cards in splitted:
+        mtg_cards_splitted.append(json.dumps({'cards': cards}))
+
     # Convert json with cards to dataframe
-    mtg_cards_rdd = sc.parallelize([json.dumps(mtg_cards)])
+    mtg_cards_rdd = sc.parallelize(mtg_cards_splitted)
     mtg_cards_df = spark.read\
         .option('multiline','true')\
         .json(mtg_cards_rdd)
@@ -85,7 +94,7 @@ def download_cards():
     # Write dataframe with cards to hdfs
     mtg_cards_df.write.format('json')\
         .mode('overwrite')\
-        .save(f'/user/hadoop/mtg/raw')
+        .save(f'/user/hadoop/mtg/raw/{args.year}/{args.month}/{args.day}')
 
 
 if __name__ == '__main__':

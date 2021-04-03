@@ -29,14 +29,18 @@ dag = DAG('MTG', default_args=args, description='Magic: The Gathering - Import C
 
 hdfs_create_cards_raw_dir = HdfsMkdirFileOperator(
     task_id='hdfs_mkdir_raw_cards',
-    directory='/user/hadoop/mtg/raw',
+    directory='/user/hadoop/mtg/raw/{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}'\
+              '/{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}'\
+              '/{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}',
     hdfs_conn_id='hdfs',
     dag=dag,
 )
 
 hdfs_create_cards_final_dir = HdfsMkdirFileOperator(
     task_id='hdfs_mkdir_final_cards',
-    directory='/user/hadoop/mtg/final',
+    directory='/user/hadoop/mtg/final/{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}'\
+              '/{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}'\
+              '/{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}',
     hdfs_conn_id='hdfs',
     dag=dag,
 )
@@ -49,7 +53,7 @@ pyspark_download_cards = SparkSubmitOperator(
     application='/home/airflow/airflow/python/pyspark_download_cards.py',
     total_executor_cores='2',
     executor_cores='2',
-    executor_memory='4g',
+    executor_memory='2g',
     num_executors='2',
     name='spark_download_cards',
     verbose=True,
@@ -57,8 +61,8 @@ pyspark_download_cards = SparkSubmitOperator(
                       '--month', '{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}',
                       '--day',  '{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}'],
     conf={
-        'spark.rpc.message.maxSize': '1024',
-        'spark.driver.memory' : '4g',
+        'spark.rpc.message.maxSize': '256',
+        'spark.driver.memory' : '2g',
     },
     dag = dag
 )

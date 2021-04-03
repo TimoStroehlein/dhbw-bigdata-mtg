@@ -35,12 +35,11 @@ def format_cards():
     spark = SparkSession(sc)
 
     # Read raw cards from HDFS
-    mtg_cards_df = spark.read\
-        .option('multiline','true')\
-        .json(f'/user/hadoop/mtg/raw')
+    mtg_cards_df = spark.read.json(f'/user/hadoop/mtg/raw/{args.year}/{args.month}/{args.day}')
 
     # Explode the array into single elements
-    mtg_cards_exploded_df = mtg_cards_df.select(explode('cards').alias('exploded'))\
+    mtg_cards_exploded_df = mtg_cards_df\
+        .select(explode('cards').alias('exploded'))\
         .select('exploded.*')
 
     # Replace all null values with empty strings
@@ -49,15 +48,16 @@ def format_cards():
 
     # Remove all unnecessary columns
     columns = ['name', 'subtypes', 'text', 'flavor', 'artist']
-    reduced_cards = mtg_cards_renamed_null_df.select(*columns)
+    reduced_cards_df = mtg_cards_renamed_null_df.select(*columns)
 
     # Flatten the subtypes from an array to a comma seperated string
-    flattened_subtypes = reduced_cards.withColumn('subtypes', concat_ws(', ', 'subtypes'))
+    flattened_subtypes_df = reduced_cards_df\
+        .withColumn('subtypes', concat_ws(', ', 'subtypes'))
 
     # Write data to HDFS
-    flattened_subtypes.write.format('json')\
+    flattened_subtypes_df.write.format('json')\
         .mode('overwrite')\
-        .save(f'/user/hadoop/mtg/final')
+        .save(f'/user/hadoop/mtg/final/{args.year}/{args.month}/{args.day}')
 
 
 if __name__ == '__main__':
