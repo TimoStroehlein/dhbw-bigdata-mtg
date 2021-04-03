@@ -10,6 +10,20 @@ services:
       - type: bind
         source: ./frontend
         target: /usr/src/app/
+    ports:
+      - "3030:3000"
+    networks:
+      bigdatanet:
+
+  backend:
+    container_name: backend
+    build: ./backend
+    image: timostroehlein/dhbw-bigdata-mtg-backend
+    command: npm run start
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /usr/src/app/
     environment:
       MONGO_INITDB_USERNAME: dev
       MONGO_INITDB_PASSWORD: dev
@@ -17,7 +31,7 @@ services:
       MONGO_HOSTNAME: mongo
       MONGO_PORT: 27017
     ports:
-      - "3030:3000"
+      - "3031:3031"
     networks:
       bigdatanet:
 
