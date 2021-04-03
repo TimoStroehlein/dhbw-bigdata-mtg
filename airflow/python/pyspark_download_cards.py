@@ -40,14 +40,12 @@ def download_cards():
     spark = SparkSession(sc)
 
     # Download cards from the MTG API
-    mtg_cards = {'cards': []}
+    mtg_cards = []
 
     # Make a request against the MTG API and get the json response
     response = requests.get('https://api.magicthegathering.io/v1/cards')
     json_raw = response.json()
-
-    for card in json_raw['cards']:
-        mtg_cards['cards'].append(card) 
+    mtg_cards.append(json.dumps(json_raw)) 
 
     # Get the next page of the MTG API
     next = response.links['next']['url']
@@ -62,9 +60,7 @@ def download_cards():
         # Get the next page
         next_response = requests.get(next)
         next_json_raw = next_response.json()
-
-        for next_card in next_json_raw['cards']:
-            mtg_cards['cards'].append(next_card)
+        mtg_cards.append(json.dumps(next_json_raw))
 
         # When the last page has been reached, stop
         if 'next' not in next_response.links:
@@ -76,17 +72,8 @@ def download_cards():
         next_count += int(next_response.headers.get('count'))
         next_total_count = int(next_response.headers.get('total-count'))
 
-    # Split raw cards
-    def chunks(lst, n):
-        for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-    splitted = list(chunks(mtg_cards['cards'], 10))
-    mtg_cards_splitted = []
-    for cards in splitted:
-        mtg_cards_splitted.append(json.dumps({'cards': cards}))
-
     # Convert json with cards to dataframe
-    mtg_cards_rdd = sc.parallelize(mtg_cards_splitted)
+    mtg_cards_rdd = sc.parallelize(mtg_cards)
     mtg_cards_df = spark.read\
         .option('multiline','true')\
         .json(mtg_cards_rdd)

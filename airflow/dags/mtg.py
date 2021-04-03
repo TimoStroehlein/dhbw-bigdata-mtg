@@ -60,10 +60,6 @@ pyspark_download_cards = SparkSubmitOperator(
     application_args=['--year', '{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}',
                       '--month', '{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}',
                       '--day',  '{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}'],
-    conf={
-        'spark.rpc.message.maxSize': '256',
-        'spark.driver.memory' : '2g',
-    },
     dag = dag
 )
 
