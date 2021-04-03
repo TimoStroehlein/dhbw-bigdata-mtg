@@ -38,9 +38,7 @@ def export_cards():
     spark = SparkSession(sc)
 
     # Read final cards as json from HDFS
-    mtg_cards_df = spark.read.format('json')\
-        .options(nullValue='')\
-        .load(f'/user/hadoop/mtg/final/cards_{args.year}-{args.month}-{args.day}.json')
+    mtg_cards_df = spark.read.json(f'/user/hadoop/mtg/final')
 
     # Convert dataframe to json
     mtg_cards_json = mtg_cards_df.toJSON().map(lambda j: json.loads(j)).collect()

@@ -42,46 +42,47 @@ def download_cards():
     # Download cards from the MTG API
     mtg_cards = {'cards': []}
 
+    # Make a request against the MTG API and get the json response
     response = requests.get('https://api.magicthegathering.io/v1/cards')
-    #response = urlopen('https://api.magicthegathering.io/v1/cards').read().decode('utf-8')
-
     json_raw = response.json()
 
     for card in json_raw['cards']:
         mtg_cards['cards'].append(card) 
 
+    # Get the next page of the MTG API
     next = response.links['next']['url']
-    counter = 0
+    next_count = int(response.headers.get('count'))
+    next_total_count = int(response.headers.get('total-count'))
+
     while True:
-        print(next)
+        # Calculate the completion and print the percentage
+        percentage = round((next_count / next_total_count) * 100, 1)
+        print(f'{percentage}%')
+
+        # Get the next page
         next_response = requests.get(next)
-        #next_response = urlopen(next).read().decode('utf-8')
         next_json_raw = next_response.json()
 
         for next_card in next_json_raw['cards']:
             mtg_cards['cards'].append(next_card)
 
-        if next == response.links['last']['url'] or counter >= 10:
+        # When the last page has been reached, stop
+        if 'next' not in next_response.links:
+            print('Successfully downloaded all data.')
             break
+
+        # Get the next page of the MTG API
         next = next_response.links['next']['url']
-        counter += counter+1
+        next_count += int(next_response.headers.get('count'))
+        next_total_count = int(next_response.headers.get('total-count'))
 
-    #for element in mtg_cards['cards']:
-    #    print(json.dumps(element))
-
-    #filename = '/home/hadoop/mtg/cards.json'
-    #os.makedirs(os.path.dirname(filename), exist_ok=True)
-    #with open(filename, 'w') as file:
-    #    json.dump(mtg_cards, file)
-
-    # Write cards from HDFS
-    print(json.dumps(mtg_cards))
+    # Convert json with cards to dataframe
     mtg_cards_rdd = sc.parallelize([json.dumps(mtg_cards)])
     mtg_cards_df = spark.read\
-        .option('multiLine', True)\
+        .option('multiline','true')\
         .json(mtg_cards_rdd)
-    mtg_cards_df.printSchema()
-    mtg_cards_df.show()
+
+    # Write dataframe with cards to hdfs
     mtg_cards_df.write.format('json')\
         .mode('overwrite')\
         .save(f'/user/hadoop/mtg/raw')

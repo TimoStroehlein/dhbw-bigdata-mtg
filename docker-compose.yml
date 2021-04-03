@@ -30,8 +30,8 @@ services:
      - "8888:8888"
     volumes:
     - type: bind
-      source: ./airflow/python
-      target: /home/hadoop/airflow/python/
+      source: ./airflow/notebooks
+      target: /home/hadoop/airflow/notebooks/
     networks:
       bigdatanet:
 

@@ -7,7 +7,7 @@ from airflow.operators.zip_file_operations import UnzipFileOperator
 from airflow.operators.hdfs_operations import HdfsPutFileOperator, HdfsGetFileOperator, HdfsMkdirFileOperator
 from airflow.operators.filesystem_operations import CreateDirectoryOperator
 from airflow.operators.filesystem_operations import ClearDirectoryOperator
-from airflow.operators.hive_operator import HiveOperator
+#from airflow.operators.hive_operator import HiveOperator
 
 # https://community.cloudera.com/t5/Support-Questions/create-hive-table-with-this-json-format/td-p/162384
 # https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-get_json_object
@@ -49,13 +49,17 @@ pyspark_download_cards = SparkSubmitOperator(
     application='/home/airflow/airflow/python/pyspark_download_cards.py',
     total_executor_cores='2',
     executor_cores='2',
-    executor_memory='2g',
+    executor_memory='4g',
     num_executors='2',
     name='spark_download_cards',
     verbose=True,
     application_args=['--year', '{{ macros.ds_format(ds, "%Y-%m-%d", "%Y")}}',
                       '--month', '{{ macros.ds_format(ds, "%Y-%m-%d", "%m")}}',
                       '--day',  '{{ macros.ds_format(ds, "%Y-%m-%d", "%d")}}'],
+    conf={
+        'spark.rpc.message.maxSize': '1024',
+        'spark.driver.memory' : '4g',
+    },
     dag = dag
 )
 

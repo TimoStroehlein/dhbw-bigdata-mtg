@@ -4,9 +4,10 @@ from pyspark import SparkContext
 import argparse
 from pyspark.sql.functions import col, expr, explode, concat_ws
 
+
 def get_args():
     """
-    Parses Command Line Args
+    Parses Command Line Args.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--year',
@@ -21,9 +22,10 @@ def get_args():
     
     return parser.parse_args()
 
+
 def format_cards():
     """
-    Format MTG Cards
+    Format MTG Cards.
     """
     # Parse Command Line Args
     args = get_args()
@@ -33,8 +35,9 @@ def format_cards():
     spark = SparkSession(sc)
 
     # Read raw cards from HDFS
-    mtg_cards_df = spark.read.format('json')\
-        .load(f'/user/hadoop/mtg/raw/cards_{args.year}-{args.month}-{args.day}.json')
+    mtg_cards_df = spark.read\
+        .option('multiline','true')\
+        .json(f'/user/hadoop/mtg/raw')
 
     # Explode the array into single elements
     mtg_cards_exploded_df = mtg_cards_df.select(explode('cards').alias('exploded'))\
@@ -44,15 +47,18 @@ def format_cards():
     mtg_cards_renamed_null_df = mtg_cards_exploded_df\
         .na.fill('')
 
+    # Remove all unnecessary columns
     columns = ['name', 'subtypes', 'text', 'flavor', 'artist']
     reduced_cards = mtg_cards_renamed_null_df.select(*columns)
 
+    # Flatten the subtypes from an array to a comma seperated string
     flattened_subtypes = reduced_cards.withColumn('subtypes', concat_ws(', ', 'subtypes'))
 
     # Write data to HDFS
     flattened_subtypes.write.format('json')\
         .mode('overwrite')\
-        .save(f'/user/hadoop/mtg/final/cards_{args.year}-{args.month}-{args.day}.json')
+        .save(f'/user/hadoop/mtg/final')
+
 
 if __name__ == '__main__':
     format_cards()
