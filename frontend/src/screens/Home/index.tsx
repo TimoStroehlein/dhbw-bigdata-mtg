@@ -42,39 +42,39 @@ export const HomeScreen = (): JSX.Element => {
                 <List>
                     <List.Item>
                         <FlexboxGrid>
-                                <FlexboxGrid.Item colspan={6}>
-                                    Image
+                                <FlexboxGrid.Item colspan={5}>
+                                    <h5>Image</h5>
                                 </FlexboxGrid.Item>
                                 <FlexboxGrid.Item colspan={2}>
-                                    Name
+                                    <h5>Name</h5>
+                                </FlexboxGrid.Item>
+                                <FlexboxGrid.Item colspan={3}>
+                                    <h5>Subtypes</h5>
+                                </FlexboxGrid.Item>
+                                <FlexboxGrid.Item colspan={4}>
+                                    <h5>Text</h5>
+                                </FlexboxGrid.Item>
+                                <FlexboxGrid.Item colspan={4}>
+                                    <h5>Flavor</h5>
+                                </FlexboxGrid.Item>
+                                <FlexboxGrid.Item colspan={4}>
+                                    <h5>Artist</h5>
                                 </FlexboxGrid.Item>
                                 <FlexboxGrid.Item colspan={2}>
-                                    Subtypes
-                                </FlexboxGrid.Item>
-                                <FlexboxGrid.Item colspan={4}>
-                                    Text
-                                </FlexboxGrid.Item>
-                                <FlexboxGrid.Item colspan={4}>
-                                    Flavor
-                                </FlexboxGrid.Item>
-                                <FlexboxGrid.Item colspan={4}>
-                                    Artist
-                                </FlexboxGrid.Item>
-                                <FlexboxGrid.Item colspan={2}>
-                                    Multiverseid
+                                    <h5>Multiverse ID</h5>
                                 </FlexboxGrid.Item>
                             </FlexboxGrid>
                     </List.Item>
                     {cards.map((card) => (
                         <List.Item>
                             <FlexboxGrid>
-                                <FlexboxGrid.Item colspan={6}>
+                                <FlexboxGrid.Item colspan={5}>
                                     <img src={card.imageUrl}></img>
                                 </FlexboxGrid.Item>
                                 <FlexboxGrid.Item colspan={2}>
                                     {card.name}
                                 </FlexboxGrid.Item>
-                                <FlexboxGrid.Item colspan={2}>
+                                <FlexboxGrid.Item colspan={3}>
                                     {card.subtypes}
                                 </FlexboxGrid.Item>
                                 <FlexboxGrid.Item colspan={4}>
