@@ -123,6 +123,7 @@ All the data is stored as json in the following, unformatted format:
             "colors":["White"],
             ...
         }
+    ]
 }
 ```
 
