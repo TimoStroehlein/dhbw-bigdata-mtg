@@ -91,4 +91,3 @@ pyspark_export_cards = SparkSubmitOperator(
 hdfs_create_cards_raw_dir >> hdfs_create_cards_final_dir >> \
     pyspark_download_cards >> pyspark_format_cards >> \
     pyspark_export_cards
-datetime
