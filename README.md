@@ -56,6 +56,8 @@ cd
 start-all.sh
 ```
 
+Navigate to Airflow (http://external-ip:8080/), start the DAG and then pray and wait :pray::hourglass_flowing_sand:.
+
 ## Links
 
 The following ports should now be accessible (if added to the allowed ports within the firewall):
