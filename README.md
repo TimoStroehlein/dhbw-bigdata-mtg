@@ -83,6 +83,8 @@ The project consists of following containers:
 
 Airflow contains one DAG called MTG, that performs all steps. All files are stored within HDFS and operations on those files are being executed with PySpark.
 
+This job should run on a daily basis. On the long term and depending on the use case, old HDFS directories might need to be cleaned up to free up storage space.
+
 The MTG DAG performs the following steps:
 
 ### hdfs_mkdir_raw_cards
