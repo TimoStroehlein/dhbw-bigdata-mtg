@@ -6,10 +6,6 @@ services:
     build: ./frontend
     image: timostroehlein/dhbw-bigdata-mtg-frontend
     command: npm run start
-    volumes:
-      - type: bind
-        source: ./frontend
-        target: /usr/src/app/
     ports:
       - "3030:3000"
     networks:
@@ -20,10 +16,6 @@ services:
     build: ./backend
     image: timostroehlein/dhbw-bigdata-mtg-backend
     command: npm run start
-    volumes:
-      - type: bind
-        source: ./backend
-        target: /usr/src/app/
     environment:
       MONGO_INITDB_USERNAME: dev
       MONGO_INITDB_PASSWORD: dev

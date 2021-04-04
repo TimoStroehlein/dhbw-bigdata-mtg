@@ -1,19 +1,7 @@
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
 from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
-from airflow.operators.http_download_operations import HttpDownloadOperator
-from airflow.operators.zip_file_operations import UnzipFileOperator
-from airflow.operators.hdfs_operations import HdfsPutFileOperator, HdfsGetFileOperator, HdfsMkdirFileOperator
-from airflow.operators.filesystem_operations import CreateDirectoryOperator
-from airflow.operators.filesystem_operations import ClearDirectoryOperator
-#from airflow.operators.hive_operator import HiveOperator
-
-# https://community.cloudera.com/t5/Support-Questions/create-hive-table-with-this-json-format/td-p/162384
-# https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-get_json_object
-# https://github.com/rcongiu/Hive-JSON-Serde
-# http://thornydev.blogspot.com/2013/07/querying-json-records-via-hive.html
-# https://community.cloudera.com/t5/Support-Questions/org-apache-hive-hcatalog-data-JsonSerDe-not-found/td-p/191730
+from airflow.operators.hdfs_operations import HdfsMkdirFileOperator
 
 # Setup DAG
 
@@ -103,3 +91,4 @@ pyspark_export_cards = SparkSubmitOperator(
 hdfs_create_cards_raw_dir >> hdfs_create_cards_final_dir >> \
     pyspark_download_cards >> pyspark_format_cards >> \
     pyspark_export_cards
+datetime

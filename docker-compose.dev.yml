@@ -1,0 +1,14 @@
+version: "3.3"
+
+services:
+  frontend:
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /usr/src/app/
+
+  backend:
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /usr/src/app/

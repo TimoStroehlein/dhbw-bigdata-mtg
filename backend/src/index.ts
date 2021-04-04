@@ -10,7 +10,13 @@ const isset = process.env.MONGO_INITDB_USERNAME && process.env.MONGO_INITDB_PASS
 const DB_URI = `mongodb://${isset ? (process.env.MONGO_INITDB_USERNAME + ':' + process.env.MONGO_INITDB_PASSWORD + '@') : ''}${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}/${process.env.MONGO_INITDB_DATABASE}`;
 const client = new MongoClient(DB_URI);
 
-const getAllCards = (db: Db, searchParam: string, callback: (cards: any) => void) => {
+/**
+ * Get cards corresponding to the search parameter.
+ * @param db Database used to find the cards.
+ * @param searchParam Search paramteter to filter the cards (card name, text or artist).
+ * @param callback Callback to be called with the found cards.
+ */
+const getCards = (db: Db, searchParam: string, callback: (cards: any) => void) => {
     const regex = RegExp(`.*${searchParam}.*`, 'i');
     const collection = db.collection('cards');
     collection.find({$or: [{name: regex}, {text: regex}, {artist: regex}]}).toArray((err, cards) => {
@@ -28,7 +34,7 @@ app.get('/cards', (req, res) => {
         console.log('Connected to mongodb');
         const db = client.db('mtg');
 
-        getAllCards(db, searchParam, (cards: any) => {
+        getCards(db, searchParam, (cards: any) => {
             res.header('Access-Control-Allow-Origin', '*');
             res.json({'cards': cards.slice(0, 20)})
         });

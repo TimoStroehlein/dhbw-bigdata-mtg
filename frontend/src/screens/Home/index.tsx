@@ -9,6 +9,7 @@ export const HomeScreen = (): JSX.Element => {
     const [searchParam, setSearchParam] = useState('');
 
     useEffect(() => {
+        // Fetch the cards corresponding to the search param
         const fetchCards = async () => {
             const cards = await getCards(searchParam);
             setCards(cards);
