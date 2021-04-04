@@ -28,7 +28,8 @@ export const HomeScreen = (): JSX.Element => {
                         <FlexboxGrid align="middle" justify="center" className="header-grid">
                             <FlexboxGrid.Item>
                                 <InputGroup className="search">
-                                    <Input onChange={(value) => setSearchParam(value)} />
+                                    <Input placeholder='card name, text or artist'
+                                        onChange={(value) => setSearchParam(value)} />
                                     <InputGroup.Button>
                                         <Icon icon="search" />
                                     </InputGroup.Button>
@@ -37,7 +38,6 @@ export const HomeScreen = (): JSX.Element => {
                         </FlexboxGrid>
                     </Row>
                 </Grid>
-                
             </Header>
             <Content className="content">
                 <List>
