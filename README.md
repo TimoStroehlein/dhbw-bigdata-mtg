@@ -1,6 +1,6 @@
 # Big Data - MTG API
 
-Implementation of an ETL Workflow with Airflow, downloading all cards from the MTG API, exporting the data to MongoDB and make the data accessible through a Node.js React App.
+Implementation of an ETL Workflow with Airflow, downloading all cards from the MTG API, exporting the cards to MongoDB and make the cards accessible through a Node.js React App.
 
 > Exam of the lecture Big Data at the University DHBW Stuttgart
 
@@ -60,7 +60,7 @@ Navigate to Airflow (http://external-ip:8080/), start the DAG and then pray and 
 
 ## Links
 
-The following ports should now be accessible (if added to the allowed ports within the firewall):
+The following ports should now be accessible (if added to the allowed ports within the firewall, when running in gcloud):
 
 * Airflow: http://external-ip:8080/
 * Hadoop: http://external-ip:8088/
@@ -121,7 +121,7 @@ All the data is stored as json in the following, unformatted format:
             "cmc":7.0,
             "colorIdentity":["W"],
             "colors":["White"],
-            ...
+            "..."
         }
     ]
 }
@@ -167,8 +167,8 @@ Get the final json data from HDFS as a dataframe, convert it to json and export 
 
 ## Backend
 
-The backend is written in written in TypeScript using Node.js and Express as server. In order to connect to mongodb, the package `mongodb` (https://www.npmjs.com/package/mongodb) is being used.
+The backend is written in TypeScript using Node.js and Express as server. In order to connect to MongoDB, the package `mongodb` (https://www.npmjs.com/package/mongodb) is being used.
 
 ## Frontend
 
-The frontend is written in written in TypeScript using Node.js and React. For UI components React Suite (`rsuite`, https://rsuitejs.com/) is being used In order to perform requests agains the backend, `axios` is being used.
+The frontend is written in TypeScript using Node.js and React. For UI components, React Suite (`rsuite`, https://rsuitejs.com/) is being used, in order to perform requests against the backend, `axios` is being used.
